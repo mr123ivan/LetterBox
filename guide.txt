@@ -22,15 +22,15 @@ Springboot                Node.js
 Node.js sequence
 
 USER AUTHENTICATION/CREATION
-1. /config
-2. /models
-3. /middleware
-4. /controller
-5. /routes
-6. server.js
+1. /config   -> connect db or the database connection
+2. /models   -> create model or the database schema
+3. /middleware -> create middleware or the authentication
+4. /controller -> create controller or the business logic
+5. /routes -> create routes or the api endpoints
+6. server.js -> create server or the main file
 
 CREATION OF OTHER ENTITIES
-1. /models
-2. /controller
-3. /routes
-4. server.js
+1. /models -> create model or the database schema
+2. /controller -> create controller or the business logic
+3. /routes -> create routes or the api endpoints
+4. server.js -> create server or the main file
