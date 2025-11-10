@@ -1,0 +1,36 @@
+- config/	Contains configuration files, primarily for database connection settings and environment setup.
+
+- controller/	Houses the business logic of the application. These functions handle requests from the routes, interact with the models, 
+and format the response.
+
+- middleware/	Stores middleware functions used to process requests before they hit the controller. Common uses include authentication, 
+authorization, and logging.
+
+- models/	Defines the data structure (schemas) for the database.
+
+- Routes/	Defines the API endpoints (URLs) and maps them to the appropriate controller functions.
+
+============================================================================================================================
+Node.js & Springboot comparison guide
+
+Springboot                Node.js
+- Entity                 - models
+- Service                - controller
+- Controller             - routes 
+
+===========================================================================================================================
+Node.js sequence
+
+USER AUTHENTICATION/CREATION
+1. /config
+2. /models
+3. /middleware
+4. /controller
+5. /routes
+6. server.js
+
+CREATION OF OTHER ENTITIES
+1. /models
+2. /controller
+3. /routes
+4. server.js
