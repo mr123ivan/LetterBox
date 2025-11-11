@@ -17,18 +17,18 @@ const {
 
 // All routes defined here will require a valid JWT via the 'protect' middleware.
 
-// --- /api/letters ---
+// --- Read All Letters ---
 router.route('/getall').get(protect, getLetters); 
 
-// POST /api/letters: Create a new letter (draft or sent)
+// --- Create a New Letter ---
 router.route('/postletter').post(protect, createLetter); 
 
-// --- /api/letters/:id ---
+// --- Read Update Delete ---
 router.route('/getid/:id').get(protect,getLetterById);
 router.route('/putid/:id').put(protect,updateLetter);
 router.route('/deleteid/:id').delete(protect,deleteLetter); 
 
-// --- /api/letters/getallreceived ---
+// --- Read All Letters That You Received ---
 router.route('/getallreceived').get(protect, getAllReceivedLetters);
 
 module.exports = router;
