@@ -22,7 +22,7 @@ const protect = async (req, res, next) => {
 
             // 3. Get user details from the DB based on the ID in the token
             // We select only necessary, non-sensitive data (NO password_hash)
-            const [rows] = await db.execute('SELECT id, name, email FROM users WHERE id = ?', [decoded.id]);
+            const [rows] = await db.execute('SELECT userId, userName, userEmail FROM users WHERE userId = ?', [decoded.id]);
 
             if (rows.length === 0) {
                 // User ID in the token is valid, but no corresponding user exists in the DB

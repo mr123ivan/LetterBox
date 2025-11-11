@@ -1,0 +1,63 @@
+// backend/models/Letter.js
+const db = require('../config/db'); // Your MySQL connection 
+
+// --- CREATE Letter ---
+const createLetter = async (user_Id, letterRecipient_id, letterTitle, letterContent) => {
+
+    const finalRecipientId = letterRecipient_id || null;
+
+    // Note the user_id field in the SQL matches your letters table schema.
+    const [result] = await db.execute(
+        'INSERT INTO letters (letterTitle, letterContent, user_id, letterRecipient_id) VALUES (?, ?, ?, ?)',
+        [letterTitle, letterContent, user_Id, finalRecipientId]
+    );
+    return result.insertId;
+};
+
+// --- READ All Letters by User ---
+const findAllLetterByUser = async (user_Id) => {
+    // Selects only letters where the user_id matches the logged-in user
+    const [rows] = await db.execute(
+        'SELECT letterId, letterTitle, letterContent, created_at FROM letters WHERE user_id = ? ORDER BY created_at DESC',
+        [user_Id]
+    );
+    return rows;
+};
+
+// --- READ Single Letter by ID and User ---
+const findLetterByIdAndUser = async (letterId, user_Id) => {
+    // Ensures the letter ID exists AND belongs to the correct user
+    const [rows] = await db.execute(
+        'SELECT letterId, letterTitle, letterContent, created_at, updated_at FROM letters WHERE letterId = ? AND user_id = ?',
+        [letterId, user_Id]
+    );
+    return rows[0];
+};
+
+// --- UPDATE Letter ---
+const updateLetter = async (letterId, user_Id, letterTitle, letterContent) => {
+    // Updates only the letter that matches BOTH the ID and the user ID
+    const [result] = await db.execute(
+        'UPDATE letters SET letterTitle = ?, letterContent = ? WHERE letterId = ? AND user_id = ?',
+        [letterTitle, letterContent, letterId, user_Id]
+    );
+    return result.affectedRows; // Returns 1 if updated, 0 if not found/no change
+};
+
+// --- DELETE Letter ---
+const deleteLetter = async (letterId, user_Id) => {
+    // Deletes only the letter that matches BOTH the ID and the user ID
+    const [result] = await db.execute(
+        'DELETE FROM letters WHERE letterId = ? AND user_id = ?',
+        [letterId, user_Id]
+    );
+    return result.affectedRows; // Returns 1 if deleted, 0 otherwise
+};
+
+module.exports = {
+    createLetter,
+    findAllLetterByUser,
+    findLetterByIdAndUser,
+    updateLetter,
+    deleteLetter,
+};
