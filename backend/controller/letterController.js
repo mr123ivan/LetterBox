@@ -128,6 +128,23 @@ const deleteLetter = async (req, res) => {
     }
 };
 
+const getAllReceivedLetters = async (req, res) => {
+    const userId = getUserId(req);
+
+    try {
+        const letters = await Letter.findAllReceivedLetters(userId);
+        
+        if (letters.length === 0) {
+            return res.status(200).json({ message: "You have no letters in your inbox." });
+        }
+        
+        res.status(200).json(letters);
+    } catch (error) {
+        console.error("Get Received Letters Error:", error);
+        res.status(500).json({ message: 'Failed to retrieve received letters.' });
+    }
+};
+
 
 module.exports = {
     createLetter,
@@ -135,4 +152,5 @@ module.exports = {
     getLetterById, // Important to export this!
     updateLetter,
     deleteLetter,
+    getAllReceivedLetters,
 };

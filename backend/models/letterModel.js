@@ -18,17 +18,17 @@ const createLetter = async (user_Id, letterRecipient_id, letterTitle, letterCont
 const findAllLetterByUser = async (user_Id) => {
     // Selects only letters where the user_id matches the logged-in user
     const [rows] = await db.execute(
-        'SELECT letterId, letterTitle, letterContent, created_at FROM letters WHERE user_id = ? ORDER BY created_at DESC',
+        'SELECT letterId, letterTitle, letterContent, created_at, letterRecipient_id FROM letters WHERE user_id = ? OR letterRecipient_id = ? ORDER BY created_at DESC',
         [user_Id]
     );
     return rows;
 };
 
-// --- READ Single Letter by ID and User ---
+// --- READ Single Letter by ID and User --- USED
 const findLetterByIdAndUser = async (letterId, user_Id) => {
     // Ensures the letter ID exists AND belongs to the correct user
     const [rows] = await db.execute(
-        'SELECT letterId, letterTitle, letterContent, created_at, updated_at FROM letters WHERE letterId = ? AND user_id = ?',
+        'SELECT letterId, letterTitle, letterContent, created_at FROM letters WHERE letterId = ? AND user_id = ?',
         [letterId, user_Id]
     );
     return rows[0];
@@ -54,10 +54,26 @@ const deleteLetter = async (letterId, user_Id) => {
     return result.affectedRows; // Returns 1 if deleted, 0 otherwise
 };
 
+
+// --- READ All Letters SENT TO User ---
+const findAllReceivedLetters = async (userId) => {
+    // Selects letters where the recipient ID matches the logged-in user's ID.
+    const [rows] = await db.execute(
+        `SELECT 
+            letterId, letterTitle, letterContent, created_at, user_id AS sender_id 
+         FROM letters 
+         WHERE letterRecipient_id = ? 
+         ORDER BY created_at DESC`,
+        [userId]
+    );
+    return rows;
+};
+
 module.exports = {
     createLetter,
     findAllLetterByUser,
     findLetterByIdAndUser,
     updateLetter,
     deleteLetter,
+    findAllReceivedLetters,
 };
