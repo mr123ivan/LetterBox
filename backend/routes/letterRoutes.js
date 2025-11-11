@@ -11,7 +11,8 @@ const {
     getLetters, 
     getLetterById, // Added for fetching a specific letter
     updateLetter, 
-    deleteLetter 
+    deleteLetter,
+    getAllReceivedLetters 
 } = require('../controller/letterController');
 
 // All routes defined here will require a valid JWT via the 'protect' middleware.
@@ -23,8 +24,11 @@ router.route('/getall').get(protect, getLetters);
 router.route('/postletter').post(protect, createLetter); 
 
 // --- /api/letters/:id ---
-router.route('/getid').get(protect, getLetterById);
-router.route('/putid').put(protect, updateLetter);
-router.route('/deleteid').delete(protect, deleteLetter); 
+router.route('/getid/:id').get(protect,getLetterById);
+router.route('/putid/:id').put(protect,updateLetter);
+router.route('/deleteid/:id').delete(protect,deleteLetter); 
+
+// --- /api/letters/getallreceived ---
+router.route('/getallreceived').get(protect, getAllReceivedLetters);
 
 module.exports = router;
