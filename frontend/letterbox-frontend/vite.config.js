@@ -10,4 +10,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    // This proxies requests starting with /api to your Node.js server
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5001', // <-- Your Express server URL
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  }
 });

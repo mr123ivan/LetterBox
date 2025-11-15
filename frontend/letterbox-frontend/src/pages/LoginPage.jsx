@@ -1,17 +1,23 @@
 import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  // Get functions and state from AuthContext
+  const { login, loading } = useAuth(); 
+
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // Remove local 'loading' state as it's provided by context
   const [error, setError] = useState('');
-  const [formData, setFormData] = useState({
+  
+  // 🚨 State field names must be 'email' and 'password' to match the form inputs
+  const [formData, setFormData] = useState({ 
     email: '',
     password: ''
   });
 
-  const handleChange = (e) => {
+const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -25,33 +31,33 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    setError(''); // Clear previous errors
     
     try {
-      // Here you would add your authentication logic
-      // For now, we'll just simulate a login process
-      setTimeout(() => {
-        setLoading(false);
-        // Successful login would navigate to the home page
-        // navigate('/'); 
-        
-        // For demo, let's just show how we'd handle errors
-        setError('This is a demo. In a real app, we would authenticate with a backend.');
-      }, 1000);
+      // Use the login function from context, passing the form data
+      await login(formData); 
+      
+      // Redirect to the home path you defined in App.jsx
+      navigate('/home'); 
+      
+      console.log('Login successful!');
+      
     } catch (err) {
-      setError('Failed to login. Please check your credentials and try again.');
-      setLoading(false);
+      console.error('Login error:', err);
+      // Display error from the backend response
+      setError(err.response?.data?.message || err.message || 'Authentication failed. Please check your credentials.');
     }
   };
 
+
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
       <div className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-12 overflow-hidden rounded-2xl shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)] bg-white">
         {/* Left side - Image/Brand */}
         <div className="hidden sm:block sm:col-span-5 md:col-span-5 relative">
           <div className="absolute inset-0 bg-cover bg-center" 
-               style={{ backgroundImage: "url('https://source.unsplash.com/random?mailbox,letters')" }}>
+              style={{ backgroundImage: "url('https://source.unsplash.com/random?mailbox,letters')" }}>
             <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 to-indigo-900/90 flex flex-col items-center justify-center p-8">
               <div className="relative z-10 text-center space-y-4">
                 <div className="mb-2 mx-auto w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
@@ -88,9 +94,10 @@ const LoginPage = () => {
             </p>
           </div>
 
+          {/* Error Display */}
           {error && (
-            <div className="mt-4 p-4 rounded-md bg-blue-50 border-l-4 border-blue-500 text-blue-700 text-sm flex items-start">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="mt-4 p-4 rounded-md bg-red-50 border-l-4 border-red-500 text-red-700 text-sm flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"/>
                 <path d="M12 16v-4"/>
                 <path d="M12 8h.01"/>
@@ -174,17 +181,23 @@ const LoginPage = () => {
                 </div>
               </div>
             </div>
-                          
+                                      
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading} // Use loading state from context
               className={`relative w-full inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-11 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 ${loading ? 'opacity-70' : ''}`}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
-              {!loading && (
-                <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
-                </svg>
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  Signing in...
+                </>
+              ) : (
+                <>Sign In 
+                  <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+                  </svg>
+                </>
               )}
             </button>
             
@@ -200,7 +213,7 @@ const LoginPage = () => {
             <button
               type="button"
               className="relative w-full inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-11 px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-800"
-              onClick={() => alert('Google Sign In would be implemented here')}
+              onClick={() => { /* Removed alert() */ }}
             >
               <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
                 <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
@@ -226,7 +239,7 @@ const LoginPage = () => {
       {error && (
         <div className="fixed bottom-4 right-4 p-4 rounded-lg bg-white border border-gray-200 shadow-lg animate-in fade-in slide-in-from-right-5 duration-300">
           <div className="flex items-center space-x-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
             <span className="text-sm font-medium text-gray-800">{error}</span>
