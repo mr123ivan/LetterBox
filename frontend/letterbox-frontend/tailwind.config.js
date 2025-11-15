@@ -8,10 +8,5 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [
-    daisyui
-  ],
-  daisyui: {
-    themes: ["light", "dark", "cupcake"],
-  },
-}
+  plugins: [], // <-- EMPTY, daisyui removed
+};

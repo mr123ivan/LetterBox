@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
-const LoginPage = () => {
+const SignupPage = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
+    fullName: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
 
   const handleChange = (e) => {
@@ -23,24 +26,35 @@ const LoginPage = () => {
     setShowPassword(!showPassword);
   };
 
+  const handleClickShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords don't match");
+      return;
+    }
+    
     setLoading(true);
     setError('');
     
     try {
-      // Here you would add your authentication logic
-      // For now, we'll just simulate a login process
+      // Here you would add your registration logic
+      // For now, we'll just simulate a signup process
       setTimeout(() => {
         setLoading(false);
-        // Successful login would navigate to the home page
-        // navigate('/'); 
+        // Successful registration would navigate to the login page
+        // navigate('/login'); 
         
-        // For demo, let's just show how we'd handle errors
-        setError('This is a demo. In a real app, we would authenticate with a backend.');
+        // For demo, let's just show how we'd handle the response
+        setError('This is a demo. In a real app, we would register with a backend.');
       }, 1000);
     } catch (err) {
-      setError('Failed to login. Please check your credentials and try again.');
+      setError('Failed to create account. Please try again.');
       setLoading(false);
     }
   };
@@ -51,7 +65,7 @@ const LoginPage = () => {
         {/* Left side - Image/Brand */}
         <div className="hidden sm:block sm:col-span-5 md:col-span-5 relative">
           <div className="absolute inset-0 bg-cover bg-center" 
-               style={{ backgroundImage: "url('https://source.unsplash.com/random?mailbox,letters')" }}>
+               style={{ backgroundImage: "url('https://source.unsplash.com/random?mailbox,letters,write')" }}>
             <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 to-indigo-900/90 flex flex-col items-center justify-center p-8">
               <div className="relative z-10 text-center space-y-4">
                 <div className="mb-2 mx-auto w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
@@ -62,14 +76,14 @@ const LoginPage = () => {
                 </div>
                 <h1 className="text-white text-3xl md:text-4xl font-bold tracking-tight">LetterBox</h1>
                 <p className="text-white/90 text-base md:text-lg max-w-xs mx-auto">
-                  Connect with friends, share updates, and explore content in one place.
+                  Join our community, share your stories, and connect with others.
                 </p>
               </div>
             </div>
           </div>
         </div>
         
-        {/* Right side - Login Form */}
+        {/* Right side - Signup Form */}
         <div className="sm:col-span-7 md:col-span-7 p-6 md:p-8 lg:p-12">
           <div className="block sm:hidden mb-8 text-center">
             <div className="mx-auto w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center mb-3">
@@ -82,9 +96,9 @@ const LoginPage = () => {
           </div>
           
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Create an account</h1>
             <p className="text-sm text-gray-500">
-              Please enter your details to sign in
+              Sign up to get started with LetterBox
             </p>
           </div>
 
@@ -99,8 +113,32 @@ const LoginPage = () => {
             </div>
           )}
 
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-5">
+              <div className="space-y-2">
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                  Full Name
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <input
+                    id="fullName"
+                    name="fullName"
+                    type="text"
+                    autoComplete="name"
+                    required
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    className="pl-10 block h-11 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="John Doe"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   Email address
@@ -127,14 +165,9 @@ const LoginPage = () => {
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                    Password
-                  </label>
-                  <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors">
-                    Forgot password?
-                  </a>
-                </div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500" viewBox="0 0 20 20" fill="currentColor">
@@ -145,7 +178,7 @@ const LoginPage = () => {
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     required
                     value={formData.password}
                     onChange={handleChange}
@@ -172,18 +205,75 @@ const LoginPage = () => {
                     </button>
                   </div>
                 </div>
+                <p className="text-xs text-gray-500 mt-1">Password must be at least 8 characters long</p>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                  Confirm Password
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="pl-10 pr-10 block h-11 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="••••••••"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <button
+                      type="button"
+                      onClick={handleClickShowConfirmPassword}
+                      className="text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
+                    >
+                      {showConfirmPassword ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
+                          <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-                          
+              
+            <div className="flex items-center">
+              <input
+                id="terms"
+                name="terms"
+                type="checkbox"
+                required
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="terms" className="ml-2 block text-sm text-gray-600">
+                I agree to the <a href="#" className="text-blue-600 hover:text-blue-500 font-medium">Terms</a> and <a href="#" className="text-blue-600 hover:text-blue-500 font-medium">Privacy Policy</a>
+              </label>
+            </div>
+                    
             <button
               type="submit"
               disabled={loading}
               className={`relative w-full inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-11 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 ${loading ? 'opacity-70' : ''}`}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Creating Account...' : 'Create Account'}
               {!loading && (
                 <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
               )}
             </button>
@@ -215,9 +305,9 @@ const LoginPage = () => {
           </form>
           
           <p className="mt-6 text-center text-sm text-gray-600">
-            Don't have an account?{' '}
-            <RouterLink to="/signup" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
-              Sign up now
+            Already have an account?{' '}
+            <RouterLink to="/login" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
+              Sign in
             </RouterLink>
           </p>
         </div>
@@ -237,4 +327,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default SignupPage;
