@@ -8,7 +8,7 @@ dotenv.config(); // Load .env file
 const app = express();
 
 //imports
-const userRoutes = require('./Routes/userRoutes');
+const userRoutes = require('./routes/userRoutes');
 const letterRoutes = require('./routes/letterRoutes');
 const { errorHandler } = require('./middleware/errorHandler');
 
