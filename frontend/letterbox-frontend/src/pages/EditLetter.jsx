@@ -18,6 +18,8 @@ const EditLetter = () => {
     letterRecipient_id: null,
   });
   const [users, setUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Fetch letter and users on component mount
   useEffect(() => {
@@ -77,6 +79,19 @@ const EditLetter = () => {
       [name]: value
     }));
   };
+
+  // Click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const dropdown = document.getElementById('recipient-dropdown');
+      if (dropdown && !dropdown.contains(event.target) && isDropdownOpen) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDropdownOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -225,25 +240,82 @@ const EditLetter = () => {
                   ></textarea>
                 </div>
 
-                {/* Letter Recipient */}
-                <div>
-                  <label htmlFor="letterRecipient_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {/* Letter Recipient with Search */}
+                <div className="relative">
+                  <label htmlFor="recipient-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Recipient (Optional)
                   </label>
-                  <select
-                    id="letterRecipient_id"
-                    name="letterRecipient_id"
-                    value={letter.letterRecipient_id || ''}
-                    onChange={handleChange}
-                    className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-500"
+                  
+                  {/* Search Input */}
+                  <div className="relative mb-2">
+                    <input
+                      type="text"
+                      id="recipient-search"
+                      placeholder="Search recipients..."
+                      className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-500 pr-10"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={() => setIsDropdownOpen(true)}
+                    />
+                    {searchQuery && (
+                      <button 
+                        onClick={() => setSearchQuery('')} 
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-500"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Recipient Dropdown */}
+                  <div className="relative" id="recipient-dropdown">
+                    <div className={`w-full rounded-lg border border-gray-300 bg-white shadow-sm dark:border-gray-600 dark:bg-gray-700 ${!isDropdownOpen && 'hidden'}`}>
+                      <ul className="max-h-60 overflow-auto py-1">
+                        <li 
+                          className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                          onClick={() => {
+                            setLetter({...letter, letterRecipient_id: ''});
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          <span className="text-gray-900 dark:text-white">No recipient (private)</span>
+                        </li>
+                        
+                        {users
+                          .filter(user => user.userName.toLowerCase().includes(searchQuery.toLowerCase()))
+                          .map(user => (
+                            <li 
+                              key={user.userId} 
+                              className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                              onClick={() => {
+                                setLetter({...letter, letterRecipient_id: user.userId});
+                                setIsDropdownOpen(false);
+                              }}
+                            >
+                              <span className="text-gray-900 dark:text-white">{user.userName}</span>
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  {/* Selected Recipient Display */}
+                  <div 
+                    className="mt-2 px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer flex justify-between items-center"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   >
-                    <option value="">No recipient (private)</option>
-                    {users.map(user => (
-                      <option key={user.userId} value={user.userId}>
-                        {user.userName} ({user.userEmail})
-                      </option>
-                    ))}
-                  </select>
+                    <span className="text-gray-900 dark:text-white">
+                      {letter.letterRecipient_id ? 
+                        users.find(u => u.userId == letter.letterRecipient_id)?.userName || `User ${letter.letterRecipient_id}` : 
+                        'No recipient (private)'}
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Choosing a recipient will send this letter to their inbox
                   </p>
