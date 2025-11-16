@@ -16,9 +16,9 @@ const createLetter = async (user_Id, letterRecipient_id, letterTitle, letterCont
 
 // --- READ All Letters by User ---
 const findAllLetterByUser = async (user_Id) => {
-    // Selects only letters where the user_id matches the logged-in user
+    // Selects letters created by this user or addressed to this user
     const [rows] = await db.execute(
-        'SELECT letterId, letterTitle, letterContent, created_at, letterRecipient_id FROM letters WHERE user_id = ? OR letterRecipient_id = ? ORDER BY created_at DESC',
+        'SELECT letterId, letterTitle, letterContent, created_at, letterRecipient_id FROM letters WHERE user_id = ? ORDER BY created_at DESC',
         [user_Id]
     );
     return rows;
@@ -28,18 +28,18 @@ const findAllLetterByUser = async (user_Id) => {
 const findLetterByIdAndUser = async (letterId, user_Id) => {
     // Ensures the letter ID exists AND belongs to the correct user
     const [rows] = await db.execute(
-        'SELECT letterId, letterTitle, letterContent, created_at FROM letters WHERE letterId = ? AND user_id = ?',
+        'SELECT letterId, letterTitle, letterContent, created_at, letterRecipient_id FROM letters WHERE letterId = ? AND user_id = ?',
         [letterId, user_Id]
     );
     return rows[0];
 };
 
 // --- UPDATE Letter ---
-const updateLetter = async (letterId, user_Id, letterTitle, letterContent) => {
+const updateLetter = async (letterId, user_Id, letterTitle, letterContent, letterRecipient_id) => {
     // Updates only the letter that matches BOTH the ID and the user ID
     const [result] = await db.execute(
-        'UPDATE letters SET letterTitle = ?, letterContent = ? WHERE letterId = ? AND user_id = ?',
-        [letterTitle, letterContent, letterId, user_Id]
+        'UPDATE letters SET letterTitle = ?, letterContent = ?, letterRecipient_id = ? WHERE letterId = ? AND user_id = ?',
+        [letterTitle, letterContent, letterRecipient_id, letterId, user_Id]
     );
     return result.affectedRows; // Returns 1 if updated, 0 if not found/no change
 };
