@@ -4,6 +4,10 @@ import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import Home from './pages/Home';
+import UserProfile from './pages/UserProfile';
+import MyLetters from './pages/MyLetters';
+import EditLetter from './pages/EditLetter';
+
 
 // --- 1. Private Route Component ---
 // Component that wraps protected routes (like the Dashboard)
@@ -15,6 +19,7 @@ const PrivateRoute = ({ children }) => {
 
 function App() {
     return (
+        
         <BrowserRouter>
             <Routes>
                 
@@ -22,12 +27,39 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
 
-                {/* Protected Route (Accessible only to logged-in users) */}
+                {/* Protected Routes (Accessible only to logged-in users) */}
                 <Route 
                     path="/home" 
                     element={
                         <PrivateRoute>
                             <Home />
+                        </PrivateRoute>
+                    } 
+                />
+                
+                <Route 
+                    path="/profile" 
+                    element={
+                        <PrivateRoute>
+                            <UserProfile />
+                        </PrivateRoute>
+                    } 
+                />
+                
+                <Route 
+                    path="/my-letters" 
+                    element={
+                        <PrivateRoute>
+                            <MyLetters />
+                        </PrivateRoute>
+                    } 
+                />
+                
+                <Route 
+                    path="/edit/:id" 
+                    element={
+                        <PrivateRoute>
+                            <EditLetter />
                         </PrivateRoute>
                     } 
                 />
@@ -46,6 +78,7 @@ function App() {
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </BrowserRouter>
+     
     );
 }
 
