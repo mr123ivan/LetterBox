@@ -4,7 +4,12 @@ const Letter = require('../models/letterModel');
 // --- Helper function to simplify getting the user ID from the request ---
 // Assuming req.user is populated by authMiddleware and has a 'userId' property
 const getUserId = (req) => {
-    return req.user.userId; 
+    // Make sure req.user exists
+    if (!req.user) {
+        throw new Error('User authentication required');
+    }
+    // Access userId from req.user (set by authMiddleware)
+    return req.user.userId;
 };
 
 // @desc    Create a new letter
@@ -84,7 +89,7 @@ const getLetterById = async (req, res) => {
 // @route   PUT /api/letters/:id
 // @access  Private
 const updateLetter = async (req, res) => {
-    const { letterTitle, letterContent } = req.body;
+    const { letterTitle, letterContent, letterRecipient_id } = req.body;
     const letterId = req.params.id;
     const userId = getUserId(req);
 
@@ -93,14 +98,20 @@ const updateLetter = async (req, res) => {
     }
 
     try {
-        const affectedRows = await Letter.updateLetter(letterId, userId, letterTitle, letterContent);
+        // Allow letterRecipient_id to be null if not provided
+        const finalRecipientId = letterRecipient_id || null;
+        
+        const affectedRows = await Letter.updateLetter(letterId, userId, letterTitle, letterContent, finalRecipientId);
 
         if (affectedRows === 0) {
              // 404 if the ID doesn't exist or doesn't belong to the user
             return res.status(404).json({ message: 'Letter not found or access denied.' });
         }
         
-        res.status(200).json({ message: 'Letter updated successfully.' });
+        res.status(200).json({ 
+            message: 'Letter updated successfully.',
+            recipient: letterRecipient_id ? `User ${letterRecipient_id}` : 'No recipient'
+        });
     } catch (error) {
         console.error("Update Letter Error:", error);
         res.status(500).json({ message: 'Failed to update letter.' });
