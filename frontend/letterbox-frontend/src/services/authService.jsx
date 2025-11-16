@@ -28,10 +28,22 @@ const logout = () => {
     localStorage.removeItem('user');
 };
 
+const updateProfile = async (userData) => {
+    const response = await axios.put(API_URL + 'profile', userData);
+    return response.data;
+};
+
+const updatePassword = async (userData) => {
+    const response = await axios.put(API_URL + 'password', userData);
+    return response.data;
+};
+
+
 const authService = {
     login,
     logout,
-    // Add register function here later
+    updateProfile,
+    updatePassword,
 };
 
 export default authService;
