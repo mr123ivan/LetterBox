@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -7,8 +8,11 @@ const SignupPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const { register } = useAuth(); 
   const [formData, setFormData] = useState({
-    fullName: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -32,29 +36,33 @@ const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     
-    // Basic validation
+    // 1. Basic frontend password validation
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords don't match");
+      setError("Passwords don't match.");
       return;
     }
     
     setLoading(true);
-    setError('');
-    
     try {
-      // Here you would add your registration logic
-      // For now, we'll just simulate a signup process
+      // 2. Call the global register function
+      // The Service layer maps these keys (fullName, email, password) to the backend's expected keys.
+      await register(formData); 
+      
+      // 3. Show success modal
+      setShowSuccessModal(true);
+      
+      // 4. Navigate to login after 5 seconds
       setTimeout(() => {
-        setLoading(false);
-        // Successful registration would navigate to the login page
-        // navigate('/login'); 
-        
-        // For demo, let's just show how we'd handle the response
-        setError('This is a demo. In a real app, we would register with a backend.');
-      }, 1000);
+        navigate('/login');
+      }, 5000);
+      
     } catch (err) {
-      setError('Failed to create account. Please try again.');
+      console.error('Registration error:', err);
+      // 5. Display specific error message propagated from the service/backend
+      setError(err.response?.data?.message || err.message || 'Failed to create account. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
@@ -117,7 +125,7 @@ const SignupPage = () => {
             <div className="space-y-5">
               <div className="space-y-2">
                 <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                  Full Name
+                  User Name
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -126,12 +134,12 @@ const SignupPage = () => {
                     </svg>
                   </div>
                   <input
-                    id="fullName"
-                    name="fullName"
+                    id="username"
+                    name="username"
                     type="text"
                     autoComplete="name"
                     required
-                    value={formData.fullName}
+                    value={formData.username}
                     onChange={handleChange}
                     className="pl-10 block h-11 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     placeholder="John Doe"
@@ -320,6 +328,38 @@ const SignupPage = () => {
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
             <span className="text-sm font-medium text-gray-800">{error}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all animate-in zoom-in-95 duration-300">
+            <div className="text-center">
+              {/* Success Icon */}
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                <svg className="h-10 w-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              
+              {/* Success Message */}
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Registration Successful!
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Your account has been created successfully. You will be redirected to the login page in a moment.
+              </p>
+              
+              {/* Loading Indicator */}
+              <div className="flex justify-center">
+                <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
       )}

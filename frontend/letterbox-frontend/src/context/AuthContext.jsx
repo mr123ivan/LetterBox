@@ -37,8 +37,17 @@ export const AuthProvider = ({ children }) => {
     };
     
     // Placeholder for register
-    const register = (userData) => {
-        // Implement later using authService.register
+    const register = async (userData) => {
+        setLoading(true);
+        try {
+            const data = await authService.register(userData);
+            setUser(data); // Log user in immediately upon successful registration
+            return data;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
     };
 
     const updateProfile = async (userData) => {

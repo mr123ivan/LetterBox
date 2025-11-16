@@ -55,7 +55,7 @@ const NotificationPage = () => {
       }
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
-      setError('Failed to load notifications. Please try again later.');
+      setError('No Notification found.');
     } finally {
       setLoading(false);
     }
