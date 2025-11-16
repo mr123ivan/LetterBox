@@ -79,7 +79,17 @@ const MyLetters = () => {
       if (response.data.message && response.data.message.includes('no letters')) {
         setLetters([]);
       } else {
-        setLetters(response.data);
+        // Filter out trashed and permanently deleted letters if viewing received letters
+        let filteredLetters = response.data;
+        if (tab === 'received') {
+          const trashedIds = JSON.parse(localStorage.getItem('trashedLetters') || '[]');
+          const permanentlyDeletedIds = JSON.parse(localStorage.getItem('permanentlyDeletedLetters') || '[]');
+          filteredLetters = response.data.filter(letter => 
+            !trashedIds.includes(letter.letterId.toString()) &&
+            !permanentlyDeletedIds.includes(letter.letterId.toString())
+          );
+        }
+        setLetters(filteredLetters);
       }
     } catch (err) {
       console.error('Failed to fetch letters:', err);
@@ -308,7 +318,7 @@ const MyLetters = () => {
                   {/* Action Buttons */}
                   <div className="bg-gray-50 dark:bg-gray-700 md:w-48 flex md:flex-col justify-end p-4 border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-600">
                     <Link
-                      to={`/letter/${letter.letterId}`}
+                      to={selectedTab === 'received' ? `/letter-received/${letter.letterId}` : `/letter/${letter.letterId}`}
                       className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full mb-2"
                     >
                       Read Full Letter

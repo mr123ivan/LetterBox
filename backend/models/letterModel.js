@@ -26,10 +26,10 @@ const findAllLetterByUser = async (user_Id) => {
 
 // --- READ Single Letter by ID and User --- USED
 const findLetterByIdAndUser = async (letterId, user_Id) => {
-    // Ensures the letter ID exists AND belongs to the correct user
+    // Ensures the letter ID exists AND user is either the sender OR recipient
     const [rows] = await db.execute(
-        'SELECT letterId, letterTitle, letterContent, created_at, letterRecipient_id FROM letters WHERE letterId = ? AND user_id = ?',
-        [letterId, user_Id]
+        'SELECT letterId, letterTitle, letterContent, created_at, letterRecipient_id, user_id as sender_id FROM letters WHERE letterId = ? AND (user_id = ? OR letterRecipient_id = ?)',
+        [letterId, user_Id, user_Id]
     );
     return rows[0];
 };

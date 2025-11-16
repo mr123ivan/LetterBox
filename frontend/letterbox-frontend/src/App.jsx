@@ -7,6 +7,11 @@ import Home from './pages/Home';
 import UserProfile from './pages/UserProfile';
 import MyLetters from './pages/MyLetters';
 import EditLetter from './pages/EditLetter';
+import CreateLetter from './pages/CreateLetter';
+import ViewLetter from './components/view-letter';
+import ViewLetterReceived from './components/view-letter-received';
+import NotificationPage from './pages/NotificationPage';
+import TrashPage from './pages/TrashPage';
 
 
 // --- 1. Private Route Component ---
@@ -60,6 +65,51 @@ function App() {
                     element={
                         <PrivateRoute>
                             <EditLetter />
+                        </PrivateRoute>
+                    } 
+                />
+                
+                <Route 
+                    path="/compose" 
+                    element={
+                        <PrivateRoute>
+                            <CreateLetter />
+                        </PrivateRoute>
+                    } 
+                />
+                
+                <Route 
+                    path="/letter/:id" 
+                    element={
+                        <PrivateRoute>
+                            <ViewLetter />
+                        </PrivateRoute>
+                    } 
+                />
+                
+                <Route 
+                    path="/letter-received/:id" 
+                    element={
+                        <PrivateRoute>
+                            <ViewLetterReceived />
+                        </PrivateRoute>
+                    } 
+                />
+                
+                <Route 
+                    path="/notifications" 
+                    element={
+                        <PrivateRoute>
+                            <NotificationPage />
+                        </PrivateRoute>
+                    } 
+                />
+                
+                <Route 
+                    path="/trash" 
+                    element={
+                        <PrivateRoute>
+                            <TrashPage />
                         </PrivateRoute>
                     } 
                 />
