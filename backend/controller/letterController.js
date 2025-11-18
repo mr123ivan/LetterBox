@@ -1,5 +1,6 @@
 // backend/controller/letterController.js
 const Letter = require('../models/letterModel');
+const { get } = require('../routes/letterRoutes');
 
 // --- Helper function to simplify getting the user ID from the request ---
 // Assuming req.user is populated by authMiddleware and has a 'userId' property
@@ -19,26 +20,29 @@ const createLetter = async (req, res) => {
     // Note: The sender's ID (user_Id) is taken from the token (securely), 
     // NOT the request body.
     const senderId = getUserId(req);
-    const {  letterTitle, letterContent, letterRecipient_id } = req.body;
+    const {  letterTitle, letterContent, letterRecipient_id, is_public } = req.body;
 
     if (!letterTitle || !letterContent) {
         return res.status(400).json({ message: 'Title and content are required fields.' });
     }
     
     // We intentionally allow letterRecipient_id to be undefined/null
-
+    const finalIsPublic = is_public || false;
     try {
-        const letterId = await Letter.createLetter(
+        let letterId = await Letter.createLetter(
             senderId, 
             letterRecipient_id,
             letterTitle, 
-            letterContent
+            letterContent,
+            finalIsPublic
+
         );
         
         res.status(201).json({ 
             letterId, 
             message: 'Letter created successfully.',
-            recipient: letterRecipient_id || 'None'
+            recipient: letterRecipient_id || 'None',
+            is_public: finalIsPublic
         });
     } catch (error) {
         console.error("Create Letter Error:", error);
@@ -157,6 +161,27 @@ const getAllReceivedLetters = async (req, res) => {
 };
 
 
+
+
+const getAllPublicLetters = async (req, res) => {
+    try {
+        // Call the model function that executes the SQL query
+        const publicLetters = await Letter.getAllPublicLetters();
+
+        if (publicLetters.length === 0) {
+            // Return 404 if no public letters are found, though 200 with an empty array is also common
+            return res.status(404).json({ message: 'No public letters found.' });
+        }
+
+        // Return the array of public letters
+        res.status(200).json(publicLetters);
+
+    } catch (error) {
+        console.error("Get Public Letters Error:", error);
+        res.status(500).json({ message: 'Failed to retrieve public letters.' });
+    }
+};
+
 module.exports = {
     createLetter,
     getLetters,
@@ -164,4 +189,5 @@ module.exports = {
     updateLetter,
     deleteLetter,
     getAllReceivedLetters,
+    getAllPublicLetters
 };

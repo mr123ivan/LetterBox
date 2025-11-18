@@ -2,14 +2,14 @@
 const db = require('../config/db'); // Your MySQL connection 
 
 // --- CREATE Letter ---
-const createLetter = async (user_Id, letterRecipient_id, letterTitle, letterContent) => {
+const createLetter = async (user_Id, letterRecipient_id, letterTitle, letterContent, is_public) => {
 
     const finalRecipientId = letterRecipient_id || null;
 
     // Note the user_id field in the SQL matches your letters table schema.
     const [result] = await db.execute(
-        'INSERT INTO letters (letterTitle, letterContent, user_id, letterRecipient_id) VALUES (?, ?, ?, ?)',
-        [letterTitle, letterContent, user_Id, finalRecipientId]
+        'INSERT INTO letters (letterTitle, letterContent, is_public, user_id, letterRecipient_id) VALUES (?, ?, ?, ?, ?)',
+        [letterTitle, letterContent, user_Id, finalRecipientId, is_public]
     );
     return result.insertId;
 };
@@ -69,6 +69,16 @@ const findAllReceivedLetters = async (userId) => {
     return rows;
 };
 
+const getAllPublicLetters = async () => {
+    const [rows] = await db.execute(
+        `SELECT letterId, letterTitle, letterContent, created_at, user_id AS sender_id 
+         FROM letters 
+         WHERE is_public = true
+         ORDER BY created_at DESC`
+    );
+    return rows;
+};
+
 module.exports = {
     createLetter,
     findAllLetterByUser,
@@ -76,4 +86,5 @@ module.exports = {
     updateLetter,
     deleteLetter,
     findAllReceivedLetters,
+    getAllPublicLetters
 };
