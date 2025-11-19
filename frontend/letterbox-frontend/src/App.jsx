@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext'; 
+import { AuthProvider, useAuth } from './context/AuthContext'; 
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import Home from './pages/Home';
@@ -20,8 +20,9 @@ const PrivateRoute = ({ children }) => {
 function App() {
     return (
         
-        <BrowserRouter>
-            <Routes>
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
                 
                 {/* Public Routes (Accessible to everyone) */}
                 <Route path="/login" element={<LoginPage />} />
@@ -76,8 +77,9 @@ function App() {
                 
                 {/* Fallback for unknown URLs */}
                 <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-        </BrowserRouter>
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
      
     );
 }
