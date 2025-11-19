@@ -16,8 +16,8 @@ const create = async (userName, userEmail, userPassword) => {
     const passwordHash = await bcrypt.hash(userPassword, salt);
 
     const [result] = await db.execute(
-        'INSERT INTO users (userName, userEmail, userPassword) VALUES (?, ?, ?)',
-        [userName, userEmail, passwordHash]
+        'INSERT INTO users (userName, userEmail, userPassword, googleId) VALUES (?, ?, ?, ?)',
+        [userName, userEmail, passwordHash, null]
     );
     
     // Return the ID of the newly created user

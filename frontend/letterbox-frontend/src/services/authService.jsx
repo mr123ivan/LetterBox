@@ -43,7 +43,9 @@ const register = async (formData) => {
     // Maps frontend fields (fullName, email, password) to backend fields (userName, userEmail, userPassword)
     const response = await axios.post(API_URL + 'register', {
         userName: formData.username,
-        userEmail: formData.email
+        userEmail: formData.email,
+        userPassword: formData.password,
+
     });
 
     // Automatically log user in by saving token after successful registration
