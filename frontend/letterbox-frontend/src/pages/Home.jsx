@@ -11,6 +11,7 @@ const Home = () => {
   const [error, setError] = useState('');
   const [selectedLetterId, setSelectedLetterId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -63,6 +64,16 @@ const Home = () => {
     fetchPublicLetters();
   }, []);
 
+  const filteredLetters = publicLetters.filter(letter => {
+    const query = searchQuery.toLowerCase();
+    return (
+      letter.letterTitle.toLowerCase().includes(query) ||
+      letter.letterContent.toLowerCase().includes(query) ||
+      (letter.sender_userName && letter.sender_userName.toLowerCase().includes(query)) ||
+      formatDate(letter.created_at).toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <SideBar className="sticky top-0 z-10" />
@@ -72,10 +83,10 @@ const Home = () => {
           <div className="mb-6 flex justify-between items-center">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                Public Feed
+                Public Letters Feed
               </h1>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
-                See what others are sharing with the world.
+                Someone might have a letter for you!
               </p>
             </div>
             <button 
@@ -102,6 +113,26 @@ const Home = () => {
                 </>
               )}
             </button>
+          </div>
+
+          {/* Search Input */}
+          <div className="mb-6">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                name="search"
+                id="search"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Search by title, content, author, or date..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </div>
 
           {/* Initial Loading State (only when letters are not yet loaded) */}
@@ -133,17 +164,17 @@ const Home = () => {
             </div>
           )}
           
-          {/* Empty State */}
-          {!loading && !error && publicLetters.length === 0 && (
+          {/* Empty State / No Search Results */}
+          {!loading && !error && filteredLetters.length === 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">
-                No public letters found
+                {searchQuery ? 'No letters match your search' : 'No public letters found'}
               </h3>
               <p className="mt-1 text-gray-500 dark:text-gray-400">
-                Be the first to share a letter with the world!
+                {searchQuery ? 'Try searching for something else.' : 'Be the first to share a letter with the world!'}
               </p>
             </div>
           )}
@@ -166,7 +197,7 @@ const Home = () => {
 
               {/* Letters Grid - 5 cards per row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {publicLetters.map((letter) => (
+                {filteredLetters.map((letter) => (
                   <div 
                     key={letter.letterId} 
                     className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden flex flex-col h-full"
