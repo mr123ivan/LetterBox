@@ -184,12 +184,33 @@ const getAllPublicLetters = async (req, res) => {
     }
 };
 
+// @desc    Get a specific public letter by ID
+// @route   GET /api/letters/publicletters/:id
+// @access  Public
+const getPublicLetterById = async (req, res) => {
+    const letterId = req.params.id;
+    
+    try {
+        const letter = await Letter.getPublicLetterById(letterId);
+        
+        if (!letter) {
+            return res.status(404).json({ message: 'Letter not found or not public.' });
+        }
+        
+        res.status(200).json(letter);
+    } catch (error) {
+        console.error("Get Public Letter By ID Error:", error);
+        res.status(500).json({ message: 'Failed to retrieve the public letter.' });
+    }
+};
+
 module.exports = {
     createLetter,
     getLetters,
-    getLetterById, // Important to export this!
+    getLetterById, 
     updateLetter,
     deleteLetter,
     getAllReceivedLetters,
-    getAllPublicLetters
+    getAllPublicLetters,
+    getPublicLetterById
 };

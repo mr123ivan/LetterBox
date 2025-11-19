@@ -71,12 +71,44 @@ const findAllReceivedLetters = async (userId) => {
 
 const getAllPublicLetters = async () => {
     const [rows] = await db.execute(
-        `SELECT letterId, letterTitle, letterContent, created_at, user_id AS sender_id 
-         FROM letters 
-         WHERE is_public = true
-         ORDER BY created_at DESC`
+        `SELECT 
+            l.letterId, 
+            l.letterTitle, 
+            l.letterContent, 
+            l.created_at, 
+            l.user_id AS sender_id,
+            u.userName AS sender_userName
+         FROM 
+            letters l
+         JOIN 
+            users u ON l.user_id = u.userId
+         WHERE 
+            l.is_public = true
+         ORDER BY 
+            l.created_at DESC`
     );
     return rows;
+};
+
+const getPublicLetterById = async (letterId) => {
+    // Get a specific public letter and its author's name
+    const [rows] = await db.execute(
+        `SELECT 
+            l.letterId, 
+            l.letterTitle, 
+            l.letterContent, 
+            l.created_at, 
+            l.user_id AS sender_id,
+            u.userName AS sender_userName
+         FROM 
+            letters l
+         JOIN 
+            users u ON l.user_id = u.userId
+         WHERE 
+            l.letterId = ? AND l.is_public = true`,
+        [letterId]
+    );
+    return rows[0]; // Return the first (and should be only) result or undefined if not found
 };
 
 module.exports = {
@@ -86,5 +118,6 @@ module.exports = {
     updateLetter,
     deleteLetter,
     findAllReceivedLetters,
-    getAllPublicLetters
+    getAllPublicLetters,
+    getPublicLetterById
 };
