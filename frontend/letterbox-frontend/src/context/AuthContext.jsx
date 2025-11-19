@@ -21,6 +21,13 @@ export const AuthProvider = ({ children }) => {
 
     // Function to handle login
     const login = async (userData) => {
+        // If the user object already has a token (from Google login), just set the state.
+        if (userData.token) {
+            setUser(userData);
+            return userData;
+        }
+
+        // Otherwise, it's a normal email/password login, so call the API.
         setLoading(true);
         try {
             const data = await authService.login(userData);
@@ -33,7 +40,6 @@ export const AuthProvider = ({ children }) => {
             setLoading(false);
         }
     };
-
     // Function to handle logout
     const logout = () => {
         // 1. Clear user from state and localStorage

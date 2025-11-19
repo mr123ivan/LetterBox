@@ -1,6 +1,63 @@
 // backend/controller/userController.js (Start with this helper function)
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+
+
+// Google Login
+const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ message: 'Missing Google credential' });
+    }
+
+    // Verify token with Google
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name } = payload;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Google account has no email' });
+    }
+
+    // find or create local user by email
+    let user = await User.findByEmail(email);
+    if (!user) {
+      // adjust to your userModel API / column names
+      const newUserId = await User.createFromGoogle({
+        userName: name,
+        userEmail: email,
+        googleId,
+      });
+
+      user = {
+        userId: newUserId,
+        userName: name,
+        userEmail: email,
+      };
+    }
+
+    // Reuse your existing JWT helper
+    const token = generateToken(user.userId);
+
+    // Match normal login response shape
+    res.json({
+      id: user.userId,
+      name: user.userName,
+      email: user.userEmail,
+      token,
+    });
+  } catch (err) {
+    console.error('Google login error:', err);
+    res.status(401).json({ message: 'Google authentication failed' });
+  }
+};
 
 
 const generateToken = (id) => {
@@ -181,5 +238,6 @@ module.exports = {
     loginUser,
     updateProfile,
     updatePassword,
-    getAllUsers
+    getAllUsers,
+    googleLogin
 };

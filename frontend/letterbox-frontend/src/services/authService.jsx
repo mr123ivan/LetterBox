@@ -12,7 +12,7 @@ const login = async (userData) => {
     // 🚨 IMPORTANT: Map frontend fields (email, password) to backend fields (userEmail, userPassword)
     const response = await axios.post(API_URL + 'login', {
         userEmail: userData.email,      // Backend expects userEmail
-        userPassword: userData.password // Backend expects userPassword
+        userPassword: userData.password// Backend expects userPassword
     });
 
     // Your backend sends userId, userName, userEmail, and token on success.
@@ -43,8 +43,7 @@ const register = async (formData) => {
     // Maps frontend fields (fullName, email, password) to backend fields (userName, userEmail, userPassword)
     const response = await axios.post(API_URL + 'register', {
         userName: formData.username,
-        userEmail: formData.email,
-        userPassword: formData.password
+        userEmail: formData.email
     });
 
     // Automatically log user in by saving token after successful registration

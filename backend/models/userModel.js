@@ -31,8 +31,8 @@ const comparePassword = async (userPassword, hash) => {
 
 // --- Helper: Find User by ID ---
 const findById = async (userId) => {
-    const [rows] = await db.execute('SELECT userId, userName, userEmail, userPassword FROM users WHERE userId = ?', [userId]);
-    return rows[0]; // Returns user data including the hash for password verification
+    const [rows] = await db.execute('SELECT userId, userName, userEmail FROM users WHERE userId = ?', [userId]);
+    return rows[0]; // Returns user data without the hash
 };
 
 // --- Update User Details (Name/Email) ---
@@ -66,6 +66,19 @@ const findAllUsers = async () => {
     return rows;
 };
 
+
+// --- Helper: Create a new User from Google login (no password) ---
+const createFromGoogle = async ({ userName, userEmail, googleId }) => {
+    // You may want to add a googleId column to your users table, but
+    // if you don't have one yet, you can just ignore it or store null.
+    const [result] = await db.execute(
+        'INSERT INTO users (userName, userEmail, userPassword) VALUES (?, ?, ?)',
+        [userName, userEmail, null] // or a random string if userPassword is NOT NULL
+    );
+
+    return result.insertId;
+};
+
 module.exports = {
     findByEmail,
     create,
@@ -74,4 +87,5 @@ module.exports = {
     updateProfile,
     updatePassword,
     findAllUsers,
+    createFromGoogle
 };
