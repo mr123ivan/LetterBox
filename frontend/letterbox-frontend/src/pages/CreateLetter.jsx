@@ -15,6 +15,7 @@ const CreateLetter = () => {
     letterTitle: '',
     letterContent: '',
     letterRecipient_id: null,
+    is_public: false,
   });
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,7 +82,8 @@ const CreateLetter = () => {
         {
           letterTitle: letter.letterTitle,
           letterContent: letter.letterContent,
-          letterRecipient_id: letter.letterRecipient_id || null
+          letterRecipient_id: letter.letterRecipient_id || null,
+          is_public: letter.is_public
         },
         {
           headers: { Authorization: `Bearer ${user.token}` }
@@ -270,6 +272,25 @@ const CreateLetter = () => {
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Choosing a recipient will send this letter to their inbox
                   </p>
+                </div>
+
+                {/* Public Toggle Switch */}
+                <div className="flex items-center justify-between pt-4">
+                    <span className="flex flex-col">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Make Letter Public</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Public letters can be viewed by anyone.</span>
+                    </span>
+                    <label htmlFor="is_public" className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                            type="checkbox" 
+                            id="is_public" 
+                            className="sr-only peer" 
+                            checked={letter.is_public}
+                            onChange={() => setLetter(prev => ({ ...prev, is_public: !prev.is_public }))}
+                        />
+                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:bg-blue-600"></div>
+                        <span className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 transform peer-checked:translate-x-full"></span>
+                    </label>
                 </div>
               </div>
 

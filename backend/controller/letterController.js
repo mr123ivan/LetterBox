@@ -93,7 +93,7 @@ const getLetterById = async (req, res) => {
 // @route   PUT /api/letters/:id
 // @access  Private
 const updateLetter = async (req, res) => {
-    const { letterTitle, letterContent, letterRecipient_id } = req.body;
+    const { letterTitle, letterContent, letterRecipient_id, is_public } = req.body;
     const letterId = req.params.id;
     const userId = getUserId(req);
 
@@ -105,7 +105,9 @@ const updateLetter = async (req, res) => {
         // Allow letterRecipient_id to be null if not provided
         const finalRecipientId = letterRecipient_id || null;
         
-        const affectedRows = await Letter.updateLetter(letterId, userId, letterTitle, letterContent, finalRecipientId);
+        const finalIsPublic = is_public !== undefined ? is_public : false;
+
+        const affectedRows = await Letter.updateLetter(letterId, userId, letterTitle, letterContent, finalRecipientId, finalIsPublic);
 
         if (affectedRows === 0) {
              // 404 if the ID doesn't exist or doesn't belong to the user

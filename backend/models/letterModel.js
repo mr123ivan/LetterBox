@@ -8,7 +8,7 @@ const createLetter = async (user_Id, letterRecipient_id, letterTitle, letterCont
 
     // Note the user_id field in the SQL matches your letters table schema.
     const [result] = await db.execute(
-        'INSERT INTO letters (letterTitle, letterContent, is_public, user_id, letterRecipient_id) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO letters (letterTitle, letterContent, user_id, letterRecipient_id, is_public) VALUES (?, ?, ?, ?, ?)',
         [letterTitle, letterContent, user_Id, finalRecipientId, is_public]
     );
     return result.insertId;
@@ -35,11 +35,11 @@ const findLetterByIdAndUser = async (letterId, user_Id) => {
 };
 
 // --- UPDATE Letter ---
-const updateLetter = async (letterId, user_Id, letterTitle, letterContent, letterRecipient_id) => {
+const updateLetter = async (letterId, user_Id, letterTitle, letterContent, letterRecipient_id, is_public) => {
     // Updates only the letter that matches BOTH the ID and the user ID
     const [result] = await db.execute(
-        'UPDATE letters SET letterTitle = ?, letterContent = ?, letterRecipient_id = ? WHERE letterId = ? AND user_id = ?',
-        [letterTitle, letterContent, letterRecipient_id, letterId, user_Id]
+        'UPDATE letters SET letterTitle = ?, letterContent = ?, letterRecipient_id = ?, is_public = ? WHERE letterId = ? AND user_id = ?',
+        [letterTitle, letterContent, letterRecipient_id, is_public, letterId, user_Id]
     );
     return result.affectedRows; // Returns 1 if updated, 0 if not found/no change
 };
