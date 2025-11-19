@@ -35,8 +35,17 @@ const Home = () => {
   const fetchPublicLetters = async () => {
     setLoading(true);
     setError('');
+
+    // Create a promise that resolves after 5 seconds
+    const delay = new Promise(resolve => setTimeout(resolve, 2000));
+
     try {
-      const response = await axios.get('/api/letters/publicletters');
+      // Start the API call
+      const apiCall = axios.get('/api/letters/publicletters');
+
+      // Wait for both the API call and the 5-second delay to complete
+      const [response] = await Promise.all([apiCall, delay]);
+
       setPublicLetters(response.data);
     } catch (err) {
       console.error('Failed to fetch public letters:', err);
@@ -72,17 +81,31 @@ const Home = () => {
             <button 
               onClick={fetchPublicLetters}
               disabled={loading}
-              className="p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 bg-white dark:bg-gray-800 shadow-sm"
+              className="px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-200"
               title="Refresh feed"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 text-gray-600 dark:text-gray-400 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h5M20 20v-5h-5M20 4h-5v5M4 20h5v-5" />
-              </svg>
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-blue-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Refreshing...</span>
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h5M19 19v-5h-5M19 4h-5v5M4 19h5v-5" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m14.828-7.172l-1.415 1.415M7.586 17.828l-1.415 1.415M16.243 17.243l1.414 1.414M7.757 6.757L6.343 5.343" />
+                  </svg>
+                  <span>Refresh</span>
+                </>
+              )}
             </button>
           </div>
 
-          {/* Loading State */}
-          {loading && (
+          {/* Initial Loading State (only when letters are not yet loaded) */}
+          {loading && publicLetters.length === 0 && (
             <div className="flex justify-center py-8">
               <div className="flex items-center space-x-2">
                 <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -125,57 +148,73 @@ const Home = () => {
             </div>
           )}
 
-          {/* Letters Grid - 5 cards per row */}
-          {!loading && !error && publicLetters.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {publicLetters.map((letter) => (
-                <div 
-                  key={letter.letterId} 
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden flex flex-col h-full"
-                >
-                  {/* Letter Content Preview */}
-                  <div className="flex-1 p-4">
-                    <div className="flex items-center mb-3">
-                      <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold">
-                        {getInitials(letter.sender_userName || 'User')}
-                      </div>
-                      <div className="ml-3">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          {letter.sender_userName || `User ${letter.sender_id}`}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {formatDate(letter.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-1">
-                      {letter.letterTitle}
-                    </h3>
-                    
-                    <p className="text-gray-700 dark:text-gray-300 line-clamp-3 mb-3">
-                      {letter.letterContent}
-                    </p>
-                  </div>
-                  
-                  {/* Action Button */}
-                  <div className="bg-gray-50 dark:bg-gray-700 p-3 border-t border-gray-200 dark:border-gray-600">
-                    <button
-                      onClick={() => {
-                        setSelectedLetterId(letter.letterId);
-                        setIsModalOpen(true);
-                      }}
-                      className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      Read Full Letter
-                    </button>
+          {/* Content Area: Refresh indicator + Letters Grid */}
+          {!error && publicLetters.length > 0 && (
+            <div>
+              {/* Refreshing Indicator (only shows on refresh, not initial load) */}
+              {loading && publicLetters.length > 0 && (
+                <div className="flex justify-center py-4">
+                  <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Refreshing feed...</span>
                   </div>
                 </div>
-              ))}
+              )}
+
+              {/* Letters Grid - 5 cards per row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {publicLetters.map((letter) => (
+                  <div 
+                    key={letter.letterId} 
+                    className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden flex flex-col h-full"
+                  >
+                    {/* Letter Content Preview */}
+                    <div className="flex-1 p-4">
+                      <div className="flex items-center mb-3">
+                        <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold">
+                          {getInitials(letter.sender_userName || 'User')}
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {letter.sender_userName || `User ${letter.sender_id}`}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatDate(letter.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-1">
+                        {letter.letterTitle}
+                      </h3>
+                      
+                      <p className="text-gray-700 dark:text-gray-300 line-clamp-3 mb-3">
+                        {letter.letterContent}
+                      </p>
+                    </div>
+                    
+                    {/* Action Button */}
+                    <div className="bg-gray-50 dark:bg-gray-700 p-3 border-t border-gray-200 dark:border-gray-600">
+                      <button
+                        onClick={() => {
+                          setSelectedLetterId(letter.letterId);
+                          setIsModalOpen(true);
+                        }}
+                        className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Read Full Letter
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
