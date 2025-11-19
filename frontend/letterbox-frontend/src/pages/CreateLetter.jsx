@@ -288,8 +288,8 @@ const CreateLetter = () => {
                             checked={letter.is_public}
                             onChange={() => setLetter(prev => ({ ...prev, is_public: !prev.is_public }))}
                         />
-                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:bg-blue-600"></div>
-                        <span className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 transform peer-checked:translate-x-full"></span>
+                        <div className={`w-11 h-6 rounded-full transition-colors duration-200 ${letter.is_public ? 'bg-green-600 dark:bg-green-700' : 'bg-red-500 dark:bg-red-700'}`}></div>
+                        <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 ${letter.is_public ? 'left-[calc(100%-21px)]' : 'left-0.5'}`}></span>
                     </label>
                 </div>
               </div>

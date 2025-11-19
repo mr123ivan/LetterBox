@@ -28,7 +28,7 @@ const findAllLetterByUser = async (user_Id) => {
 const findLetterByIdAndUser = async (letterId, user_Id) => {
     // Ensures the letter ID exists AND user is either the sender OR recipient
     const [rows] = await db.execute(
-        'SELECT letterId, letterTitle, letterContent, created_at, letterRecipient_id, user_id as sender_id FROM letters WHERE letterId = ? AND (user_id = ? OR letterRecipient_id = ?)',
+        'SELECT letterId, letterTitle, letterContent, created_at, letterRecipient_id, user_id as sender_id, is_public FROM letters WHERE letterId = ? AND (user_id = ? OR letterRecipient_id = ?)',
         [letterId, user_Id, user_Id]
     );
     return rows[0];
