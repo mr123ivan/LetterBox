@@ -93,7 +93,7 @@ const getLetterById = async (req, res) => {
 // @route   PUT /api/letters/:id
 // @access  Private
 const updateLetter = async (req, res) => {
-    const { letterTitle, letterContent, letterRecipient_id } = req.body;
+    const { letterTitle, letterContent, letterRecipient_id, is_public } = req.body;
     const letterId = req.params.id;
     const userId = getUserId(req);
 
@@ -105,7 +105,9 @@ const updateLetter = async (req, res) => {
         // Allow letterRecipient_id to be null if not provided
         const finalRecipientId = letterRecipient_id || null;
         
-        const affectedRows = await Letter.updateLetter(letterId, userId, letterTitle, letterContent, finalRecipientId);
+        const finalIsPublic = is_public !== undefined ? is_public : false;
+
+        const affectedRows = await Letter.updateLetter(letterId, userId, letterTitle, letterContent, finalRecipientId, finalIsPublic);
 
         if (affectedRows === 0) {
              // 404 if the ID doesn't exist or doesn't belong to the user
@@ -182,12 +184,33 @@ const getAllPublicLetters = async (req, res) => {
     }
 };
 
+// @desc    Get a specific public letter by ID
+// @route   GET /api/letters/publicletters/:id
+// @access  Public
+const getPublicLetterById = async (req, res) => {
+    const letterId = req.params.id;
+    
+    try {
+        const letter = await Letter.getPublicLetterById(letterId);
+        
+        if (!letter) {
+            return res.status(404).json({ message: 'Letter not found or not public.' });
+        }
+        
+        res.status(200).json(letter);
+    } catch (error) {
+        console.error("Get Public Letter By ID Error:", error);
+        res.status(500).json({ message: 'Failed to retrieve the public letter.' });
+    }
+};
+
 module.exports = {
     createLetter,
     getLetters,
-    getLetterById, // Important to export this!
+    getLetterById, 
     updateLetter,
     deleteLetter,
     getAllReceivedLetters,
-    getAllPublicLetters
+    getAllPublicLetters,
+    getPublicLetterById
 };

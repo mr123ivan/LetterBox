@@ -16,6 +16,7 @@ const EditLetter = () => {
     letterTitle: '',
     letterContent: '',
     letterRecipient_id: null,
+    is_public: false,
   });
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,6 +46,7 @@ const EditLetter = () => {
         letterTitle: response.data.letterTitle,
         letterContent: response.data.letterContent,
         letterRecipient_id: response.data.letterRecipient_id || null,
+        is_public: !!response.data.is_public, // Convert 1/0 to true/false
       });
     } catch (err) {
       console.error('Failed to fetch letter:', err);
@@ -319,6 +321,25 @@ const EditLetter = () => {
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Choosing a recipient will send this letter to their inbox
                   </p>
+                </div>
+
+                {/* Public Toggle Switch */}
+                <div className="flex items-center justify-between pt-4">
+                    <span className="flex flex-col">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Make Letter Public</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Public letters can be viewed by anyone.</span>
+                    </span>
+                    <label htmlFor="is_public" className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                            type="checkbox" 
+                            id="is_public" 
+                            className="sr-only peer" 
+                            checked={letter.is_public}
+                            onChange={() => setLetter(prev => ({ ...prev, is_public: !prev.is_public }))}
+                        />
+                        <div className={`w-11 h-6 rounded-full transition-colors duration-200 ${letter.is_public ? 'bg-green-600 dark:bg-green-700' : 'bg-red-500 dark:bg-red-700'}`}></div>
+                        <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 ${letter.is_public ? 'left-[calc(100%-21px)]' : 'left-0.5'}`}></span>
+                    </label>
                 </div>
               </div>
 

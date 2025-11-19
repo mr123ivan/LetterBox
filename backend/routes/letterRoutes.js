@@ -9,11 +9,12 @@ const { protect } = require('../middleware/authMiddleware');
 const { 
     createLetter, 
     getLetters, 
-    getLetterById, // Added for fetching a specific letter
+    getLetterById, 
     updateLetter, 
     deleteLetter,
     getAllReceivedLetters,
-    getAllPublicLetters
+    getAllPublicLetters,
+    getPublicLetterById
 } = require('../controller/letterController');
 
 // All routes defined here will require a valid JWT via the 'protect' middleware.
@@ -33,5 +34,6 @@ router.route('/deleteid/:id').delete(protect,deleteLetter);
 router.route('/getallreceived').get(protect, getAllReceivedLetters);
 
 router.route('/publicletters').get(getAllPublicLetters);
+router.route('/publicletters/:id').get(getPublicLetterById);
 
 module.exports = router;
