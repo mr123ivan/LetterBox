@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import SideBar from '../components/SideBar';
+import openAiService from '../services/openAiService';
 
 const CreateLetter = () => {
   const { user } = useAuth();
@@ -21,12 +22,84 @@ const CreateLetter = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const [aiSuggestions, setAiSuggestions] = useState('');
+  const [aiRewrite, setAiRewrite] = useState('');
+  const [aiRewriteDisplay, setAiRewriteDisplay] = useState('');
+  const [isTypingRewrite, setIsTypingRewrite] = useState(false);
+  const [isRewriteApplied, setIsRewriteApplied] = useState(false);
+  const [hasUsedAi, setHasUsedAi] = useState(false); // Track if AI was used
+
+  //AI Chat
+  const [showAiChat, setShowAiChat] = useState(false);
+  const [aiChatMessage, setAiChatMessage] = useState('');
+  const [aiChatTone, setAiChatTone] = useState('sincere and warm');
+  const [aiChatLength, setAiChatLength] = useState('medium');
+  const [aiChatResult, setAiChatResult] = useState('');
+  const [aiChatResultDisplay, setAiChatResultDisplay] = useState('');
+  const [isTypingChat, setIsTypingChat] = useState(false);
+  const [isChatApplied, setIsChatApplied] = useState(false);
+  const [aiChatLoading, setAiChatLoading] = useState(false);
+  const [aiChatError, setAiChatError] = useState('');
+
   // Fetch users on component mount
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const fetchUsers = async () => {
+  // Typewriter effect for AI Rewrite
+  useEffect(() => {
+    if (!aiRewrite) {
+      setAiRewriteDisplay('');
+      setIsTypingRewrite(false);
+      return;
+    }
+
+    setIsTypingRewrite(true);
+    setAiRewriteDisplay('');
+    let currentIndex = 0;
+
+    const typingInterval = setInterval(() => {
+      if (currentIndex < aiRewrite.length) {
+        setAiRewriteDisplay(aiRewrite.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        setIsTypingRewrite(false);
+        clearInterval(typingInterval);
+      }
+    }, 5); // 20ms per character
+
+    return () => clearInterval(typingInterval);
+  }, [aiRewrite]);
+
+  // Typewriter effect for AI Chat Result
+  useEffect(() => {
+    if (!aiChatResult) {
+      setAiChatResultDisplay('');
+      setIsTypingChat(false);
+      return;
+    }
+
+    setIsTypingChat(true);
+    setAiChatResultDisplay('');
+    let currentIndex = 0;
+
+    const typingInterval = setInterval(() => {
+      if (currentIndex < aiChatResult.length) {
+        setAiChatResultDisplay(aiChatResult.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        setIsTypingChat(false);
+        clearInterval(typingInterval);
+      }
+    }, 5); // 20ms per character
+
+    return () => clearInterval(typingInterval);
+  }, [aiChatResult]);
+
+const fetchUsers = async () => {
     try {
       // Make sure we have the token
       if (!user || !user.token) {
@@ -44,7 +117,7 @@ const CreateLetter = () => {
     }
   };
 
-  const handleChange = (e) => {
+const handleChange = (e) => {
     const { name, value } = e.target;
     setLetter(prev => ({
       ...prev,
@@ -65,7 +138,7 @@ const CreateLetter = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isDropdownOpen]);
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -83,7 +156,8 @@ const CreateLetter = () => {
           letterTitle: letter.letterTitle,
           letterContent: letter.letterContent,
           letterRecipient_id: letter.letterRecipient_id || null,
-          is_public: letter.is_public
+          is_public: letter.is_public,
+          is_ai_assisted: hasUsedAi
         },
         {
           headers: { Authorization: `Bearer ${user.token}` }
@@ -104,6 +178,90 @@ const CreateLetter = () => {
       setLoading(false);
     }
   };
+
+
+
+
+const handleAiRewrite = async () => {
+  setAiLoading(true);
+  setAiError('');
+  setAiRewrite('');
+  setIsRewriteApplied(false);
+
+  try {
+    const data = await openAiService.rewriteLetter({
+      letterContent: letter.letterContent,
+      tone: 'romantic but respectful', // you can make this selectable later
+    });
+    setAiRewrite(data.rewritten || '');
+  } catch (err) {
+    console.error('AI rewrite error:', err);
+    setAiError(err.response?.data?.message || 'Failed to rewrite letter.');
+  } finally {
+    setAiLoading(false);
+  }
+};
+
+const handleUseAiRewrite = () => {
+  if (!aiRewrite) return;
+  // Use the full text, not the animated display
+  setLetter(prev => ({
+    ...prev,
+    letterContent: aiRewrite,
+  }));
+  setIsRewriteApplied(true);
+  setHasUsedAi(true); // Mark that AI was used
+};
+
+const handleRejectAiRewrite = () => {
+  setAiRewrite('');
+  setAiRewriteDisplay('');
+  setIsRewriteApplied(false);
+  setIsTypingRewrite(false);
+};
+
+
+const handleAiChatSubmit = async () => {
+  setAiChatLoading(true);
+  setAiChatError('');
+  setAiChatResult('');
+  setIsChatApplied(false);
+
+  try {
+    const data = await openAiService.chatLetter({
+      message: aiChatMessage,
+      tone: aiChatTone,
+      length: aiChatLength,
+    });
+    setAiChatResult(data.letter || '');
+  } catch (err) {
+    console.error('AI chatLetter error:', err);
+    setAiChatError(
+      err.response?.data?.message || 'Failed to generate letter from AI.'
+    );
+  } finally {
+    setAiChatLoading(false);
+  }
+};
+
+const handleApplyAiChatLetter = () => {
+  if (!aiChatResult) return;
+  // Use the full text, not the animated display
+  setLetter(prev => ({
+    ...prev,
+    letterContent: aiChatResult,
+  }));
+  setIsChatApplied(true);
+  setHasUsedAi(true); // Mark that AI was used
+};
+
+const handleRejectAiChat = () => {
+  setAiChatResult('');
+  setAiChatResultDisplay('');
+  setIsChatApplied(false);
+  setIsTypingChat(false);
+};
+
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
@@ -190,7 +348,220 @@ const CreateLetter = () => {
                     placeholder="Write your letter here..."
                     required
                   ></textarea>
+
+                {/* AI Suggestion buttons */}
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={handleAiRewrite}
+                    disabled={aiLoading || !letter.letterContent}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    {aiLoading ? 'Rewriting...' : 'Rewrite with AI'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAiChat(!showAiChat)}
+                    className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition-colors text-sm"
+                  >
+                    {showAiChat ? 'Hide Chat with AI' : 'Chat with AI'}
+                  </button>
                 </div>
+                {/* end AI Suggestion buttons */}
+
+                {/* AI Suggestion error message */}
+                {aiError && (
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{aiError}</p>
+                )}
+
+                {/* AI Suggestion */}
+                {aiSuggestions && (
+                  <div className="mt-4 p-3 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800">
+                    <h3 className="text-sm font-semibold mb-1 text-gray-800 dark:text-gray-100">
+                      AI Suggestions
+                    </h3>
+                    <p className="text-sm whitespace-pre-wrap text-gray-700 dark:text-gray-200">
+                      {aiSuggestions}
+                    </p>
+                  </div>
+                )}
+                {/* AI Suggestion rewritten version */}
+                {aiRewrite && (
+                  <div className="mt-4 p-3 rounded-lg border border-dashed border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-gray-800">
+                    <div className="flex justify-between items-center mb-1">
+                      <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                        AI Rewritten Version {isTypingRewrite && <span className="animate-pulse ml-1">✨</span>}
+                      </h3>
+                      <div className="flex gap-2 items-center">
+                        <button
+                          type="button"
+                          onClick={handleUseAiRewrite}
+                          disabled={isTypingRewrite || isRewriteApplied}
+                          className="text-xs px-2 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                          {isRewriteApplied ? (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                              Applied
+                            </>
+                          ) : (
+                            'Use this version'
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleRejectAiRewrite}
+                          disabled={isTypingRewrite}
+                          className="text-xs px-2 py-1 rounded-md bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                          title="Reject and clear"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap text-gray-700 dark:text-gray-200">
+                      {aiRewriteDisplay}
+                      {isTypingRewrite && <span className="inline-block w-1 h-4 bg-blue-600 ml-1 animate-pulse"></span>}
+                    </p>
+                  </div>
+                )}
+                {/* end AI Suggestion rewritten version */}
+
+      {/* Chat with AI to generate a letter */}
+      {showAiChat && (
+      <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          Chat with AI to Generate a Letter
+        </h2>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+          Describe the letter you want. AI will generate a complete draft you can apply to your content.
+        </p>
+
+        {/* User request */}
+        <textarea
+          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          rows="4"
+          placeholder="Example: I want a romantic apology letter to my girlfriend, 3 paragraphs, sincere but hopeful..."
+          value={aiChatMessage}
+          onChange={e => setAiChatMessage(e.target.value)}
+        />
+
+        {/* Tone + length controls */}
+        <div className="mt-3 flex flex-wrap gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Tone
+            </label>
+            <select
+              className="text-sm rounded-md border border-gray-300 bg-white px-2 py-1 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              value={aiChatTone}
+              onChange={e => setAiChatTone(e.target.value)}
+            >
+              <option value="sincere and warm">Sincere & warm</option>
+              <option value="romantic">Romantic</option>
+              <option value="formal">Formal</option>
+              <option value="casual">Casual</option>
+              <option value="apologetic">Apologetic</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Length
+            </label>
+            <select
+              className="text-sm rounded-md border border-gray-300 bg-white px-2 py-1 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              value={aiChatLength}
+              onChange={e => setAiChatLength(e.target.value)}
+            >
+              <option value="short (1–2 paragraphs)">Short</option>
+              <option value="medium (2–4 paragraphs)">Medium</option>
+              <option value="long (4–6 paragraphs)">Long</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleAiChatSubmit}
+            className="self-end inline-flex items-center px-3 py-1.5 rounded-md text-sm text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={aiChatLoading || !aiChatMessage}
+          >
+            {aiChatLoading ? 'Generating…' : 'Ask AI to Write Letter'}
+          </button>
+        </div>
+
+        {aiChatError && (
+          <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+            {aiChatError}
+          </p>
+        )}
+
+        {aiChatResult && (
+          <div className="mt-4 p-3 rounded-lg border border-dashed border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-gray-800">
+            <div className="flex justify-between items-center mb-1">
+              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                AI Generated Letter {isTypingChat && <span className="animate-pulse ml-1">✨</span>}
+              </h3>
+              <div className="flex gap-2 items-center">
+                <button
+                  type="button"
+                  onClick={handleApplyAiChatLetter}
+                  disabled={isTypingChat || isChatApplied}
+                  className="text-xs px-2 py-1 rounded-md bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                >
+                  {isChatApplied ? (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Applied
+                    </>
+                  ) : (
+                    'Apply to Letter Content'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRejectAiChat}
+                  disabled={isTypingChat}
+                  className="text-xs px-2 py-1 rounded-md bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                  title="Reject and clear"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  Reject
+                </button>
+              </div>
+            </div>
+            <p className="text-sm whitespace-pre-wrap text-gray-700 dark:text-gray-200">
+              {aiChatResultDisplay}
+              {isTypingChat && <span className="inline-block w-1 h-4 bg-purple-600 ml-1 animate-pulse"></span>}
+            </p>
+          </div>
+        )}
+      </div>
+      )}
+
+                </div>
+                {/* end letter content section*/}
+
+
+
+
+
+
+
+
+
+
+
+
 
                 {/* Letter Recipient with Search */}
                 <div className="relative">
