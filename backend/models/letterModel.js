@@ -2,14 +2,14 @@
 const db = require('../config/db'); // Your MySQL connection 
 
 // --- CREATE Letter ---
-const createLetter = async (user_Id, letterRecipient_id, letterTitle, letterContent, is_public) => {
+const createLetter = async (user_Id, letterRecipient_id, letterTitle, letterContent, is_public, is_ai_assisted = false) => {
 
     const finalRecipientId = letterRecipient_id || null;
 
     // Note the user_id field in the SQL matches your letters table schema.
     const [result] = await db.execute(
-        'INSERT INTO letters (letterTitle, letterContent, user_id, letterRecipient_id, is_public) VALUES (?, ?, ?, ?, ?)',
-        [letterTitle, letterContent, user_Id, finalRecipientId, is_public]
+        'INSERT INTO letters (letterTitle, letterContent, user_id, letterRecipient_id, is_public, is_ai_assisted) VALUES (?, ?, ?, ?, ?, ?)',
+        [letterTitle, letterContent, user_Id, finalRecipientId, is_public, is_ai_assisted]
     );
     return result.insertId;
 };
@@ -18,7 +18,7 @@ const createLetter = async (user_Id, letterRecipient_id, letterTitle, letterCont
 const findAllLetterByUser = async (user_Id) => {
     // Selects letters created by this user or addressed to this user
     const [rows] = await db.execute(
-        'SELECT letterId, letterTitle, letterContent, created_at, letterRecipient_id FROM letters WHERE user_id = ? ORDER BY created_at DESC',
+        'SELECT letterId, letterTitle, letterContent, created_at, letterRecipient_id, is_ai_assisted FROM letters WHERE user_id = ? ORDER BY created_at DESC',
         [user_Id]
     );
     return rows;
@@ -28,18 +28,18 @@ const findAllLetterByUser = async (user_Id) => {
 const findLetterByIdAndUser = async (letterId, user_Id) => {
     // Ensures the letter ID exists AND user is either the sender OR recipient
     const [rows] = await db.execute(
-        'SELECT letterId, letterTitle, letterContent, created_at, letterRecipient_id, user_id as sender_id, is_public FROM letters WHERE letterId = ? AND (user_id = ? OR letterRecipient_id = ?)',
+        'SELECT letterId, letterTitle, letterContent, created_at, letterRecipient_id, user_id as sender_id, is_public, is_ai_assisted FROM letters WHERE letterId = ? AND (user_id = ? OR letterRecipient_id = ?)',
         [letterId, user_Id, user_Id]
     );
     return rows[0];
 };
 
 // --- UPDATE Letter ---
-const updateLetter = async (letterId, user_Id, letterTitle, letterContent, letterRecipient_id, is_public) => {
+const updateLetter = async (letterId, user_Id, letterTitle, letterContent, letterRecipient_id, is_public, is_ai_assisted) => {
     // Updates only the letter that matches BOTH the ID and the user ID
     const [result] = await db.execute(
-        'UPDATE letters SET letterTitle = ?, letterContent = ?, letterRecipient_id = ?, is_public = ? WHERE letterId = ? AND user_id = ?',
-        [letterTitle, letterContent, letterRecipient_id, is_public, letterId, user_Id]
+        'UPDATE letters SET letterTitle = ?, letterContent = ?, letterRecipient_id = ?, is_public = ?, is_ai_assisted = ? WHERE letterId = ? AND user_id = ?',
+        [letterTitle, letterContent, letterRecipient_id, is_public, is_ai_assisted, letterId, user_Id]
     );
     return result.affectedRows; // Returns 1 if updated, 0 if not found/no change
 };
@@ -54,13 +54,12 @@ const deleteLetter = async (letterId, user_Id) => {
     return result.affectedRows; // Returns 1 if deleted, 0 otherwise
 };
 
-
 // --- READ All Letters SENT TO User ---
 const findAllReceivedLetters = async (userId) => {
     // Selects letters where the recipient ID matches the logged-in user's ID.
     const [rows] = await db.execute(
         `SELECT 
-            letterId, letterTitle, letterContent, created_at, user_id AS sender_id 
+            letterId, letterTitle, letterContent, created_at, user_id AS sender_id, is_ai_assisted 
          FROM letters 
          WHERE letterRecipient_id = ? 
          ORDER BY created_at DESC`,
@@ -77,6 +76,7 @@ const getAllPublicLetters = async () => {
             l.letterContent, 
             l.created_at, 
             l.user_id AS sender_id,
+            l.is_ai_assisted,
             u.userName AS sender_userName
          FROM 
             letters l
@@ -99,6 +99,7 @@ const getPublicLetterById = async (letterId) => {
             l.letterContent, 
             l.created_at, 
             l.user_id AS sender_id,
+            l.is_ai_assisted,
             u.userName AS sender_userName
          FROM 
             letters l

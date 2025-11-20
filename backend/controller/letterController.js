@@ -20,7 +20,7 @@ const createLetter = async (req, res) => {
     // Note: The sender's ID (user_Id) is taken from the token (securely), 
     // NOT the request body.
     const senderId = getUserId(req);
-    const {  letterTitle, letterContent, letterRecipient_id, is_public } = req.body;
+    const {  letterTitle, letterContent, letterRecipient_id, is_public, is_ai_assisted } = req.body;
 
     if (!letterTitle || !letterContent) {
         return res.status(400).json({ message: 'Title and content are required fields.' });
@@ -28,21 +28,23 @@ const createLetter = async (req, res) => {
     
     // We intentionally allow letterRecipient_id to be undefined/null
     const finalIsPublic = is_public || false;
+    const finalIsAiAssisted = is_ai_assisted || false;
     try {
         let letterId = await Letter.createLetter(
             senderId, 
             letterRecipient_id,
             letterTitle, 
             letterContent,
-            finalIsPublic
-
+            finalIsPublic,
+            finalIsAiAssisted
         );
         
         res.status(201).json({ 
             letterId, 
             message: 'Letter created successfully.',
             recipient: letterRecipient_id || 'None',
-            is_public: finalIsPublic
+            is_public: finalIsPublic,
+            is_ai_assisted: finalIsAiAssisted
         });
     } catch (error) {
         console.error("Create Letter Error:", error);

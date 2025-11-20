@@ -10,6 +10,7 @@ const app = express();
 //imports
 const userRoutes = require('./routes/userRoutes');
 const letterRoutes = require('./routes/letterRoutes');
+const openAiRoutes = require('./routes/openAiRoutes');
 const { errorHandler } = require('./middleware/errorHandler');
 
 // Middleware to parse JSON bodies
@@ -18,6 +19,7 @@ app.use(express.json());
 // Placeholder for routes (will be added in Step 3 & 4)
 app.use('/api/users', userRoutes);
 app.use('/api/letters', letterRoutes);
+app.use('/api/ai', openAiRoutes);
 app.use(errorHandler);
 
 
