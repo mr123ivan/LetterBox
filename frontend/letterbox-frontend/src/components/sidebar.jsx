@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from './theme-provider';
 
-const SideBar = ({ className }) => {
+const SideBar  = ({ className }) => {
   const location = useLocation();
   const { logout, user } = useAuth(); // Assuming user data is available in AuthContext
   const { theme, setTheme } = useTheme();

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import SideBar from './SideBar';
+import SideBar from './sidebar';
 
 const ViewLetterReceived = () => {
   const { id } = useParams();

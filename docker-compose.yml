@@ -1,0 +1,53 @@
+services:
+  backend:
+    build: ./backend
+    container_name: letterbox-backend
+    ports:
+      - "5001:5001"
+    environment:
+      # Removed spaces after '=' to ensure values are parsed correctly
+      - DB_HOST=mysql
+      - DB_USER=root
+      - DB_PASSWORD=9919_gamdias
+      - DB_NAME=db_letterbox
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_LIFETIME=${JWT_LIFETIME}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL}
+      - GROQ_BASE_URL=${GROQ_BASE_URL}
+    depends_on:
+      mysql:
+        condition: service_healthy # <--- FIX 1: Waits for Healthcheck
+
+  frontend:
+    build: ./frontend/letterbox-frontend
+    container_name: letterbox-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+  mysql:
+    image: mysql:8
+    container_name: letterbox_mysql
+    environment:
+      # FIX 2: Synced Root Password. 
+      # Your backend tries to login as 'root' with '9919_gamdias', 
+      # so the database root password must match that.
+      MYSQL_ROOT_PASSWORD: 9919_gamdias 
+      MYSQL_DATABASE: db_letterbox
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    # FIX 3: Added Healthcheck
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  mysql_data:
