@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import SideBar from '../components/SideBar';
+import SideBar from '../components/sidebar';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import ViewLetterPublic from '../components/view-letter-public';

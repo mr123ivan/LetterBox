@@ -14,7 +14,7 @@ export default defineConfig({
     // This proxies requests starting with /api to your Node.js server
     proxy: {
       '/api': {
-        target: 'http://localhost:5001', // <-- Your Express server URL
+        target: 'http://backend:5001', // <-- Your Express server URL
         changeOrigin: true,
         secure: false,
       },

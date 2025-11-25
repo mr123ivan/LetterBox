@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import SideBar from '../components/SideBar';
+import SideBar from '../components/sidebar';
 
 const TrashPage = () => {
   const { user } = useAuth();
