@@ -6,10 +6,10 @@ services:
       - "5001:5001"
     environment:
       # Removed spaces after '=' to ensure values are parsed correctly
-      - DB_HOST=mysql
-      - DB_USER=root
-      - DB_PASSWORD=9919_gamdias
-      - DB_NAME=db_letterbox
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_LIFETIME=${JWT_LIFETIME}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
@@ -36,8 +36,8 @@ services:
       # FIX 2: Synced Root Password. 
       # Your backend tries to login as 'root' with '9919_gamdias', 
       # so the database root password must match that.
-      MYSQL_ROOT_PASSWORD: 9919_gamdias 
-      MYSQL_DATABASE: db_letterbox
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     ports:
       - "3307:3306"
     volumes:
