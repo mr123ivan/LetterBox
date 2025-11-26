@@ -5,7 +5,6 @@ services:
     ports:
       - "5001:5001"
     environment:
-      # Removed spaces after '=' to ensure values are parsed correctly
       - DB_HOST=${DB_HOST}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -19,7 +18,7 @@ services:
       - GROQ_BASE_URL=${GROQ_BASE_URL}
     depends_on:
       mysql:
-        condition: service_healthy # <--- FIX 1: Waits for Healthcheck
+        condition: service_healthy 
 
   frontend:
     build: ./frontend/letterbox-frontend
@@ -33,16 +32,13 @@ services:
     image: mysql:8
     container_name: letterbox_mysql
     environment:
-      # FIX 2: Synced Root Password. 
-      # Your backend tries to login as 'root' with '9919_gamdias', 
-      # so the database root password must match that.
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    # FIX 3: Added Healthcheck
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
