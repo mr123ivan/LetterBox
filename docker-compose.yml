@@ -21,7 +21,10 @@ services:
         condition: service_healthy 
 
   frontend:
-    build: ./frontend/letterbox-frontend
+    build:
+      context: ./frontend/letterbox-frontend
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
     container_name: letterbox-frontend
     ports:
       - "5173:80"
