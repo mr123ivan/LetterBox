@@ -27,7 +27,7 @@ services:
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
     container_name: letterbox-frontend
     ports:
-      - "5173:80"
+      - "80:80"
     depends_on:
       - backend
 
@@ -48,5 +48,5 @@ services:
   #     timeout: 10s
   #     retries: 5
 
-volumes:
-  mysql_data:
+# volumes:
+#   mysql_data:
