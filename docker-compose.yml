@@ -16,9 +16,9 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL}
       - GROQ_BASE_URL=${GROQ_BASE_URL}
-    depends_on:
-      mysql:
-        condition: service_healthy 
+    # depends_on:
+    #   mysql:
+    #     condition: service_healthy 
 
   frontend:
     build:
