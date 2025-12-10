@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas-pro';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +16,7 @@ const ViewLetterReceived = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [senderName, setSenderName] = useState('');
+  const letterContentRef = useRef(null);
 
   useEffect(() => {
     fetchLetter();
@@ -83,6 +86,38 @@ const ViewLetterReceived = () => {
     }
     
     return name.charAt(0).toUpperCase() + (name.length > 1 ? name.charAt(1) : '');
+  };
+
+  const handleDownloadPdf = () => {
+    const input = letterContentRef.current;
+    if (!input) return;
+
+    // Temporarily hide action buttons so they don't appear in the PDF
+    const buttons = input.querySelectorAll('.action-buttons');
+    buttons.forEach(btn => btn.style.display = 'none');
+
+    html2canvas(input, { 
+      scale: 2, // Higher scale for better resolution
+      useCORS: true
+    }).then(canvas => {
+      // Show buttons again after capture
+      buttons.forEach(btn => btn.style.display = 'flex');
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`letter-${letter.letterId}.pdf`);
+    }).catch(err => {
+      console.error("Could not generate PDF", err);
+      setError('Could not generate PDF. Please try again.');
+      // Ensure buttons are visible even if there's an error
+      buttons.forEach(btn => btn.style.display = 'flex');
+    });
   };
 
   const handleMoveToTrash = () => {
@@ -190,6 +225,7 @@ const ViewLetterReceived = () => {
           </div>
 
           {/* Letter Card */}
+          <div ref={letterContentRef}>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
             {/* Letter Header */}
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-8">
@@ -209,8 +245,8 @@ const ViewLetterReceived = () => {
                   </div>
                 </div>
 
-                {/* Move to Trash Button */}
-                <div className="flex space-x-2">
+                {/* Action Buttons */}
+                <div className="flex space-x-2 action-buttons">
                   <button
                     onClick={handleMoveToTrash}
                     className="inline-flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors shadow-md"
@@ -219,6 +255,15 @@ const ViewLetterReceived = () => {
                       <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
                     Move to Trash
+                  </button>
+                  <button
+                    onClick={handleDownloadPdf}
+                    className="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors shadow-md"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                    Download
                   </button>
                 </div>
               </div>
@@ -264,6 +309,7 @@ const ViewLetterReceived = () => {
                 </div>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </main>
