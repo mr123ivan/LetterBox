@@ -8,7 +8,7 @@ const SideBar  = ({ className }) => {
   const location = useLocation();
   const { logout, user } = useAuth(); // Assuming user data is available in AuthContext
   const { theme, setTheme } = useTheme();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
 
   // Navigation items
